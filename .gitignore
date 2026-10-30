@@ -1,0 +1,66 @@
+# ─── Dependencies ───────────────────────────────────────────────
+node_modules/
+.npm
+
+# ─── Build output ───────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+
+# ─── Environment files — NEVER COMMIT ──────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.env.local
+
+# ─── Logs ───────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Editor & OS ────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+
+# ─── Testing ────────────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+
+# ─── Misc ───────────────────────────────────────────────────────
+*.local
+.cache/
+.parcel-cache/
+.turbo/
+storybook-static/
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# ── Nested duplicate folders ─────────────────────────────────
+mini-project/
+
+serviceAccountKey.json
+.vite/
+
+backend/certs/server.key
