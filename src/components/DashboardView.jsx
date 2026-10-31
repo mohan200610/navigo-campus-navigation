@@ -1,10 +1,10 @@
 import { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import RouteController from './RouteController';
-import { TIMETABLE, getCurrentDay, getRoomById, EVENTS as INITIAL_EVENTS } from '../data';
+import { TIMETABLE, getCurrentDay, getRoomById, EVENTS as INITIAL_EVENTS, getRelativeDayInfo } from '../data';
 import { ArrowRight, Sparkles, Navigation, BookOpen, Building, Users, Clock, Trophy, Calendar, Bell, MapPin, Zap } from 'lucide-react';
 
-// ── Staff slot helpers ────────────────────────────────────────
+// ââ Staff slot helpers ââââââââââââââââââââââââââââââââââââââââ
 function getCurrentStaffSlot(facultyId) {
   const now = new Date();
   const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -30,7 +30,7 @@ function getStaffScheduleForToday(facultyId) {
   ).sort((a, b) => a.startTime.localeCompare(b.startTime));
 }
 
-// ── Static data ───────────────────────────────────────────────
+// ââ Static data âââââââââââââââââââââââââââââââââââââââââââââââ
 const CORE_SYSTEMS = [
   {
     id: 'route',
@@ -92,26 +92,26 @@ const WHAT_IT_SOLVES = [
   {
     q: 'Where is my class?',
     a: 'Real-time room numbers, building coordinates & floor levels linked live to the map.',
-    icon: '🎯',
+    icon: 'ð¯',
   },
   {
     q: 'How do I get there?',
     a: 'Instant BFS pathfinding with turn-by-turn waypoints, walking distance, ETA, and ramp access.',
-    icon: '🧭',
+    icon: 'ð§­',
   },
   {
     q: "What's on campus today?",
     a: 'Live events bulletin, interactive timetables, exam seating, and broadcast notices.',
-    icon: '⚡',
+    icon: 'â¡',
   },
 ];
 
 const DEFAULT_NOTICES = [
   { id: 'dn_1', text: 'Library timings extended to 9 PM on weekdays.', severity: 'INFO' },
-  { id: 'dn_2', text: 'Semester exam schedule published — check the Exams section.', severity: 'INFO' },
+  { id: 'dn_2', text: 'Semester exam schedule published â check the Exams section.', severity: 'INFO' },
 ];
 
-// ── Main export ───────────────────────────────────────────────
+// ââ Main export âââââââââââââââââââââââââââââââââââââââââââââââ
 export default function DashboardView() {
   const { userRole } = useContext(AppContext);
   return userRole === 'staff' || userRole === 'admin'
@@ -119,9 +119,9 @@ export default function DashboardView() {
     : <PublicDashboard />;
 }
 
-// ─────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // PUBLIC DASHBOARD  (students + unauthenticated visitors)
-// ─────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function PublicDashboard() {
   const { navigateTo, announcements, removeAnnouncement, events } = useContext(AppContext);
 
@@ -153,17 +153,27 @@ function PublicDashboard() {
   const allNotices = [...(announcements || []), ...visibleDefaultNotices];
   const displayNotices = allNotices.slice(0, 2);
 
-  // New updates detection (Tomorrow's Mini Project Expo or uploaded notices)
-  const tomorrowEvents = (events || []).filter(e => e.tag === 'TOMORROW' || e.date === '2026.10.31');
-  const hasNewUpdates = (announcements && announcements.length > 0) || tomorrowEvents.length > 0;
+    // Dynamic day-to-day updates detection
+  const allEventsList = (events && events.length ? events : INITIAL_EVENTS);
+  const activeEventItems = allEventsList.map(e => {
+    const dayInfo = getRelativeDayInfo(e.date);
+    return { event: e, dayInfo };
+  }).filter(({ event: e, dayInfo }) => {
+    return dayInfo.isToday || dayInfo.isTomorrow || e.tag === 'TOMORROW' || e.tag === 'TODAY' || e.date === '2026.10.31';
+  });
+
+  const hasNewUpdates = (announcements && announcements.length > 0) || activeEventItems.length > 0;
 
   const rawFlowItems = [
-    ...tomorrowEvents.map(e => ({
-      id: e.id,
-      text: `[EVENT] TOMORROW (2026.10.31): ${e.title} — ${e.venueName || e.venue} (${e.time})`,
-      target: 'events',
-      isTomorrow: true
-    })),
+    ...activeEventItems.map(({ event: e, dayInfo }) => {
+      const dayLabel = dayInfo.isToday ? 'TODAY' : dayInfo.isTomorrow ? 'TOMORROW' : (dayInfo.label || 'UPCOMING');
+      return {
+        id: e.id,
+        text: `[EVENT] ${dayLabel} (${e.date}): ${e.title}  ${e.venueName || e.venue} (${e.time})`,
+        target: 'events',
+        isTomorrow: dayInfo.isToday || dayInfo.isTomorrow
+      };
+    }),
     ...(announcements || []).map(a => ({
       id: a.id,
       text: `[${a.severity}] ${a.text}`,
@@ -184,7 +194,7 @@ function PublicDashboard() {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-6 page-enter">
 
-      {/* ── Flowing Live Updates (Only renders if new update exists, otherwise normal application) ── */}
+      {/* ââ Flowing Live Updates (Only renders if new update exists, otherwise normal application) ââ */}
       {hasNewUpdates && (
         <div className="overflow-hidden rounded-2xl border border-violet-500/25 dark:border-violet-500/30 bg-[var(--bg-surface)] dark:bg-[#12141F]/90 backdrop-blur-md shadow-md py-2.5 px-3 flex items-center gap-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 border border-emerald-500/40 dark:border-emerald-400/40 text-emerald-800 dark:text-[#6EE7B7] shrink-0 font-mono text-[10px] font-black uppercase tracking-wider">
@@ -204,19 +214,19 @@ function PublicDashboard() {
                 >
                   {item.isTomorrow ? (
                     <span className="text-emerald-700 dark:text-[#6EE7B7] font-black">
-                      ⚡ {item.text}
+                      â¡ {item.text}
                     </span>
                   ) : (
                     <span>{item.text}</span>
                   )}
-                  <span className="text-slate-400 dark:text-violet-400/30">│</span>
+                  <span className="text-slate-400 dark:text-violet-400/30">â</span>
                 </span>
               ))}
             </div>
           </div>
 
           <button
-            onClick={() => navigateTo(tomorrowEvents.length > 0 ? 'events' : 'notices')}
+            onClick={() => navigateTo(activeEventItems.length > 0 ? 'events' : 'notices')}
             className="shrink-0 font-mono text-[10px] font-bold uppercase text-emerald-700 dark:text-[#6EE7B7] hover:text-emerald-900 dark:hover:text-white px-2.5 py-1 rounded-lg hover:bg-emerald-500/10 dark:hover:bg-emerald-500/20 transition-all flex items-center gap-1"
           >
             <span>View All</span>
@@ -225,7 +235,7 @@ function PublicDashboard() {
         </div>
       )}
 
-      {/* ── Admin announcement banner ── */}
+      {/* ââ Admin announcement banner ââ */}
       {announcements.length > 0 && (
         <div
           className="glass-card p-4 md:p-5 flex flex-col gap-2 rounded-xl"
@@ -254,7 +264,7 @@ function PublicDashboard() {
         </div>
       )}
 
-      {/* ── Hero Glass Showcase ──
+      {/* ââ Hero Glass Showcase ââ
           CRITICAL: Do NOT add backdrop-filter here. The Hero card must use a
           solid background. If backdrop-filter is active on the Hero, the GPU
           compositing layer will sample scrolled content (RouteController, etc.)
@@ -275,11 +285,11 @@ function PublicDashboard() {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="max-w-xl">
-            {/* Live date pill — no backdrop-filter (already inside Hero which is isolated) */}
+            {/* Live date pill â no backdrop-filter (already inside Hero which is isolated) */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md mb-4 border border-[var(--glass-border)] transition-all duration-300 cursor-default" style={{ background: 'rgba(0,0,0,0.04)' }}>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-mono text-[10px] font-semibold tracking-wider uppercase text-[var(--text-muted)]">
-                {date} · MERIDIAN CAMPUS
+                {date} Â· MERIDIAN CAMPUS
               </span>
             </div>
 
@@ -337,7 +347,7 @@ function PublicDashboard() {
         </div>
       </div>
 
-      {/* ── Campus Highlights ── */}
+      {/* ââ Campus Highlights ââ */}
       <div className="space-y-4 relative z-10">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
@@ -375,12 +385,12 @@ function PublicDashboard() {
                         <p className="font-semibold text-sm text-[var(--text-primary)] truncate">{ev.title}</p>
                         {(ev.tag === 'TOMORROW' || ev.date === '2026.10.31') && (
                           <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#6EE7B7] border border-emerald-500/30 dark:border-emerald-400/40 font-bold shrink-0">
-                            ⚡ TOMORROW
+                            â¡ TOMORROW
                           </span>
                         )}
                       </div>
                       <p className="font-mono text-[11px] text-[var(--text-muted)] mt-0.5">
-                        {ev.date} · {ev.venueName || ev.venue}
+                        {ev.date} Â· {ev.venueName || ev.venue}
                       </p>
                     </div>
                   </div>
@@ -443,7 +453,7 @@ function PublicDashboard() {
         </div>
       </div>
 
-      {/* ── Route Finder Section ── */}
+      {/* ââ Route Finder Section ââ */}
       <div className="space-y-4 relative z-30">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
@@ -462,7 +472,7 @@ function PublicDashboard() {
         </div>
       </div>
 
-      {/* ── What NaviGO Solves ── */}
+      {/* ââ What NaviGO Solves ââ */}
       <div className="space-y-4 relative z-10">
         <p className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-widest px-1">
           Designed for Meridian Students &amp; Visitors
@@ -483,7 +493,7 @@ function PublicDashboard() {
         </div>
       </div>
 
-      {/* ── Core Systems Grid ── */}
+      {/* ââ Core Systems Grid ââ */}
       <div className="space-y-4 relative z-10">
         <div className="flex items-center justify-between px-1">
           <p className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-widest">
@@ -530,7 +540,7 @@ function PublicDashboard() {
         </div>
       </div>
 
-      {/* ── Campus Status Strip ── */}
+      {/* ââ Campus Status Strip ââ */}
       <div className="glass-card rounded-xl px-6 py-3.5 flex flex-col sm:flex-row items-center gap-3 justify-between border border-[var(--glass-border)] shadow-xs">
         <div className="flex items-center gap-3">
           <div
@@ -541,7 +551,7 @@ function PublicDashboard() {
             }}
           />
           <p className="font-mono text-xs text-[var(--text-secondary)] tracking-wide">
-            {announcements.length > 0 ? `${announcements.length} broadcast update(s) active` : 'Campus Status: Normal Operations · All Venues Open'}
+            {announcements.length > 0 ? `${announcements.length} broadcast update(s) active` : 'Campus Status: Normal Operations Â· All Venues Open'}
           </p>
         </div>
         <button
@@ -556,9 +566,9 @@ function PublicDashboard() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // STAFF DASHBOARD  (authenticated staff + admin fallback)
-// ─────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function StaffDashboard() {
   const { navigateTo, announcements, removeAnnouncement, authUser } = useContext(AppContext);
 
@@ -576,9 +586,9 @@ function StaffDashboard() {
   const staffName        = authUser?.name        || 'Dr. Priya Sharma';
   const staffDesignation = authUser?.designation || 'Professor';
   const staffDepartment  = authUser?.department  || 'Computer Science Engineering';
-  const staffLabel       = `${staffDesignation} · ${staffDepartment}`;
+  const staffLabel       = `${staffDesignation} Â· ${staffDepartment}`;
 
-  // Resolve the faculty ID — use the one stored in authUser or fall back to a known demo ID
+  // Resolve the faculty ID â use the one stored in authUser or fall back to a known demo ID
   const facultyId = authUser?.facultyId || 'fac_002';
 
   const currentSlot   = getCurrentStaffSlot(facultyId);
@@ -617,7 +627,7 @@ function StaffDashboard() {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-8 page-enter">
 
-      {/* ── Admin announcement banner ── */}
+      {/* ââ Admin announcement banner ââ */}
       {announcements.length > 0 && (
         <div
           className="glass-card p-4 md:p-5 flex flex-col gap-2 rounded-xl"
@@ -642,7 +652,7 @@ function StaffDashboard() {
         </div>
       )}
 
-      {/* ── Staff Hero / Welcome ── */}
+      {/* ââ Staff Hero / Welcome ââ */}
       <div
         className="rounded-xl p-6 md:p-10 relative overflow-hidden"
         style={{
@@ -657,7 +667,7 @@ function StaffDashboard() {
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md mb-4 border border-[var(--glass-border)] transition-all duration-300 cursor-default" style={{ background: 'rgba(0,0,0,0.04)' }}>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-mono text-[10px] font-semibold tracking-wider uppercase text-[var(--text-muted)]">
-                {date} · MERIDIAN CAMPUS
+                {date} Â· MERIDIAN CAMPUS
               </span>
             </div>
 
@@ -730,7 +740,7 @@ function StaffDashboard() {
                   <div className="flex items-center gap-4 text-sm font-medium text-[var(--text-secondary)]">
                     <div className="flex items-center gap-1.5">
                       <Clock size={16} className="text-[var(--text-muted)]" />
-                      <span>{displaySlot.startTime} – {displaySlot.endTime}</span>
+                      <span>{displaySlot.startTime} â {displaySlot.endTime}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Building size={16} className="text-[var(--text-muted)]" />
@@ -778,7 +788,7 @@ function StaffDashboard() {
                   {nextBreak.type}
                 </p>
                 <p className="font-mono text-sm text-[var(--text-secondary)] mb-4">
-                  {nextBreak.start} – {nextBreak.end}
+                  {nextBreak.start} â {nextBreak.end}
                 </p>
                 <div className="text-xs font-mono px-3 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-md inline-block">
                   Starts in {getTimeRemaining(nextBreak.start)}
@@ -810,7 +820,7 @@ function StaffDashboard() {
                           {slot.subject}
                         </p>
                         <p className="text-xs text-[var(--text-secondary)]">
-                          {slot.classId.replace('_', '-').toUpperCase()} · Room {getRoomById(slot.roomId)?.code || slot.roomId}
+                          {slot.classId.replace('_', '-').toUpperCase()} Â· Room {getRoomById(slot.roomId)?.code || slot.roomId}
                         </p>
                       </div>
                     </div>

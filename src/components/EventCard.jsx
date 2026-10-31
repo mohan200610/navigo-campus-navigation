@@ -1,3 +1,4 @@
+import { getRelativeDayInfo } from '../data';
 import { useContext, useState } from 'react';
 import { MapPin, ArrowRight, Calendar, X, Info, Zap } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
@@ -9,7 +10,9 @@ export default function EventCard({ event, spanClass }) {
   const venueBuilding = getBuildingById(event.venue);
   const isVenueClosed = locationStatus[event.venue] === 'closed';
   const isDark = theme === 'dark';
-  const isTomorrow = event.tag === 'TOMORROW' || event.date === '2026.10.31';
+  const dayInfo = getRelativeDayInfo(event.date);
+  const badgeLabel = dayInfo.isToday ? 'TODAY' : dayInfo.isTomorrow ? 'TOMORROW' : (event.tag === 'TOMORROW' ? 'TOMORROW' : (event.tag === 'TODAY' ? 'TODAY' : null));
+  const isTomorrow = Boolean(badgeLabel);
 
   const handleRouteToVenue = () => {
     setToNode(event.venue);
@@ -36,7 +39,7 @@ export default function EventCard({ event, spanClass }) {
               {isTomorrow && (
                 <span className="inline-flex items-center gap-1 font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-800 dark:text-[#6EE7B7] border border-emerald-500/40 dark:border-emerald-400/40 animate-pulse">
                   <Zap size={10} className="fill-current" />
-                  <span>TOMORROW</span>
+                  <span>{badgeLabel}</span>
                 </span>
               )}
 

@@ -5554,3 +5554,34 @@ export function getCurrentDay() {
 // ── Export Main Block spatial & floor plan data ──
 export * from './data/mainBlockData.js';
 
+
+// Dynamic date calculation for events and ticker updates
+export function getRelativeDayInfo(dateStr) {
+  if (!dateStr) return { label: '', isToday: false, isTomorrow: false, isPast: false, isLive: false };
+  const cleanStr = String(dateStr).trim().replace(/\./g, '-');
+  const parts = cleanStr.split('-');
+  if (parts.length !== 3) return { label: '', isToday: false, isTomorrow: false, isPast: false, isLive: false };
+
+  const eventYear = parseInt(parts[0], 10);
+  const eventMonth = parseInt(parts[1], 10) - 1;
+  const eventDay = parseInt(parts[2], 10);
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const targetDate = new Date(eventYear, eventMonth, eventDay);
+
+  const diffMs = targetDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return { label: 'TODAY', prefix: 'TODAY', isToday: true, isTomorrow: false, isPast: false, isLive: true };
+  } else if (diffDays === 1) {
+    return { label: 'TOMORROW', prefix: 'TOMORROW', isToday: false, isTomorrow: true, isPast: false, isLive: false };
+  } else if (diffDays === -1) {
+    return { label: 'YESTERDAY', prefix: 'YESTERDAY', isToday: false, isTomorrow: false, isPast: true, isLive: false };
+  } else if (diffDays < -1) {
+    return { label: 'COMPLETED', prefix: 'PAST', isToday: false, isTomorrow: false, isPast: true, isLive: false };
+  } else {
+    return { label: `IN ${diffDays} DAYS`, prefix: `IN ${diffDays} DAYS`, isToday: false, isTomorrow: false, isPast: false, isLive: false };
+  }
+}

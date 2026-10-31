@@ -1,3 +1,4 @@
+import { getRelativeDayInfo } from '../data';
 // NoticesView — campus notice board with Live Announcements & Instant Delete
 
 import { useContext, useState } from 'react';
@@ -16,7 +17,7 @@ const SEVERITY_CONFIG = {
 const DEFAULT_NOTICES = [
   {
     id: 'n_default_0',
-    text: 'TOMORROW: Annual Mini Project Expo starts at 09:30 AM in Auditorium & CSE Labs. All batches must register with project models.',
+    text: `${getRelativeDayInfo('2026.10.31').label || 'TODAY'}: Annual Mini Project Expo starts at 09:30 AM in Auditorium & CSE Labs. All batches must register with project models.`,
     severity: 'UPDATE',
     timestamp: '2026-10-30T10:00:00.000Z',
   },

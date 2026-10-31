@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { AppContext } from '../context/AppContext';
-import { MARQUEE_ITEMS } from '../data';
+import { MARQUEE_ITEMS, getRelativeDayInfo } from '../data';
 import { Zap } from 'lucide-react';
 
 export default function MarqueeTicker() {
@@ -8,7 +8,10 @@ export default function MarqueeTicker() {
   const adminAnns = ctx?.announcements ?? [];
   const baseItems = ctx?.marqueeItems || MARQUEE_ITEMS;
 
-  const expoTag = '[EVENT] TOMORROW (2026.10.31): MINI PROJECT EXPO — AUDITORIUM & CSE LABS';
+    const expoDate = '2026.10.31';
+  const expoDayInfo = getRelativeDayInfo(expoDate);
+  const expoDayLabel = expoDayInfo.isToday ? 'TODAY' : expoDayInfo.isTomorrow ? 'TOMORROW' : (expoDayInfo.label || 'UPCOMING');
+  const expoTag = `[EVENT] ${expoDayLabel} (${expoDate}): MINI PROJECT EXPO — AUDITORIUM & CSE LABS`;
 
   const dedupedBase = baseItems.filter((i) => !i.includes('MINI PROJECT EXPO'));
   const allItems = [
@@ -25,7 +28,7 @@ export default function MarqueeTicker() {
       <div className="overflow-hidden py-2 bg-[var(--bg-surface)] dark:bg-[#12141F]/80 backdrop-blur-md rounded-full border border-violet-500/25 dark:border-violet-500/30 shadow-sm">
         <div className="ticker-track flex items-center">
           {items.map((item, i) => {
-            const isTomorrowExpo = item.includes('MINI PROJECT EXPO') || item.includes('TOMORROW');
+            const isTomorrowExpo = item.includes('MINI PROJECT EXPO') || item.includes('TODAY') || item.includes('TOMORROW');
             const isAlert = item.startsWith('[ALERT]') || item.startsWith('[EMERGENCY]');
 
             return (
@@ -43,7 +46,7 @@ export default function MarqueeTicker() {
                     {item}
                   </span>
                 )}
-                <span className="mx-3 text-slate-400 dark:text-violet-400/30">│</span>
+                <span className="mx-3 text-slate-400 dark:text-violet-400/30">â</span>
               </span>
             );
           })}
