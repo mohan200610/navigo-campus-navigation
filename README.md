@@ -1,13 +1,13 @@
-# Meridian Campus Guide (NaviGO) — Campus Navigation & Student Platform
+# NaviGo Campus Guide (NaviGO) — Campus Navigation & Student Platform
 
 > **PROTOTYPE & DEMONSTRATION NOTICE**  
-> Meridian Campus Guide is an independent student-led design demonstration and technical prototype. It is **not** an official college service or endorsed institution portal. Real physical campus GIS coordinates and survey maps have not yet been integrated; spatial map radar canvas, pathfinding BFS routes, walking distances, and time estimates are synthetic topological demonstrations.
+> NaviGo is an independent student-led design demonstration and technical prototype. It is **not** an official college service or endorsed institution portal. Real physical campus GIS coordinates and survey maps have not yet been integrated; spatial map radar canvas, pathfinding BFS routes, walking distances, and time estimates are synthetic topological demonstrations.
 
 ---
 
 ## Overview
 
-Meridian Campus Guide (NaviGO) delivers a cinematic, liquid-glass digital campus experience designed for desktop, tablet, and mobile browsers. It pairs rich visual design (frosted glassmorphism, animated radar sweep calibration, fluid typography) with functional student information modules including classroom discovery, exam seating lookup, timetable schedules, faculty directories, and session-local admin management.
+NaviGo Campus Guide (NaviGO) delivers a cinematic, liquid-glass digital campus experience designed for desktop, tablet, and mobile browsers. It pairs rich visual design (frosted glassmorphism, animated radar sweep calibration, fluid typography) with functional student information modules including classroom discovery, exam seating lookup, timetable schedules, faculty directories, and session-local admin management.
 
 ---
 
